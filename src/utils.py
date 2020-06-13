@@ -35,7 +35,7 @@ class Data:
     def read(self):
         """
         Reads the data from disks and performs
-        all the data wranling required
+        all the data wrangling required
         :return: None
         """
         self.train = None
