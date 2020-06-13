@@ -12,13 +12,38 @@ data_ratings = os.path.join(data_dir, 'ratings.csv')
 data_ratings_small = os.path.join(data_dir, 'ratings_small.csv')
 
 
+class Data:
+    """
+    The dataset encapsulates all the data set and it is in charge
+    of preforming any feature extraction, filtering and parsing
+    needed for the training. It also separates the data into a
+    train and test set that can be easily called. Since the data
+    is small enough, it can be read completely before training,
+    it does not involve any parallel read/train architecture
+    such as with torch.utils.data.
 
-def get_data(test_split=0.2):
+    Attributes
+    self.test_split (float): the percentage of data that belongs to the test set
+    self.train (np.array): contains the training set
+    self.test (np.array): contains the test/eval set
     """
-    Generates a data quadruple that contains the data
-    separated in a train/test split and it is formatted
-    to
-    :param test_split:
-    :return:
-    """
-    raise NotImplementedError()
+    def __init__(self, test_split):
+        self.test_split = test_split
+        self.train = None
+        self.test = None
+
+    def read(self):
+        """
+        Reads the data from disks and performs
+        all the data wranling required
+        :return: None
+        """
+        self.train = None
+        self.test = None
+
+    def train(self):
+        return self.train
+
+    def test(self):
+        return self.test
+
