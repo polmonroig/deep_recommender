@@ -1,3 +1,5 @@
+from sklearn.model_selection import train_test_split
+import pandas as pd 
 import os
 
 # global variables definition
@@ -10,7 +12,8 @@ data_links_small = os.path.join(data_dir, 'links_small.csv')
 data_movies_metadata = os.path.join(data_dir, 'movies_metadata.csv')
 data_ratings = os.path.join(data_dir, 'ratings.csv')
 data_ratings_small = os.path.join(data_dir, 'ratings_small.csv')
-
+data_train = os.path.join(data_dir, 'train.csv')
+data_test = os.path.join(data_dir, 'test.csv')
 
 class Data:
     """
@@ -27,19 +30,44 @@ class Data:
     self.train (np.array): contains the training set
     self.test (np.array): contains the test/eval set
     """
-    def __init__(self, test_split):
+    def __init__(self, test_split=0.2, seed=42):
         self.test_split = test_split
         self.train = None
         self.test = None
+        self.seed = seed 
 
     def read(self):
         """
+        Reads the already prepared data from disk, 
+        call this function when training the network 
+        """
+        self.train = pd.read_csv(data_train)
+        self.test = pd.read_csv(data_test)
+
+    def read_and_prepare(self, transforms):
+        """
         Reads the data from disks and performs
         all the data wrangling required
+        :param transforms list of transformations to apply 
         :return: None
         """
-        self.train = None
-        self.test = None
+        features, target = self.read_unprocessed()
+        # apply transforms 
+        for t in transforms: 
+            features = t(features)
+        # split dataset 
+        result = train_test_split(features, target, 
+                                  test_size=self.test_split, random_state=self.seed)
+    
+        self.train = (result[0], result[2])
+        self.test = (result[1], result[3])
+
+
+    def read_unprocessed(self):
+        features = None 
+        target = None 
+            
+        return features, target 
 
     def train(self):
         return self.train
