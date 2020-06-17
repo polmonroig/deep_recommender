@@ -1,8 +1,9 @@
 from sklearn.model_selection import train_test_split
-import pandas as pd 
+import pandas as pd
+import numpy as np
 import os
 
-# global variables definition
+# global data variables definition
 data_dir = '../data'
 data_files = sorted(os.listdir(data_dir))
 data_credits = os.path.join(data_dir, 'credits.csv')
@@ -14,6 +15,10 @@ data_ratings = os.path.join(data_dir, 'ratings.csv')
 data_ratings_small = os.path.join(data_dir, 'ratings_small.csv')
 data_train = os.path.join(data_dir, 'train.csv')
 data_test = os.path.join(data_dir, 'test.csv')
+
+# global model definitions
+model_dir = '../models'
+
 
 class Data:
     """
@@ -62,12 +67,31 @@ class Data:
         self.train = (result[0], result[2])
         self.test = (result[1], result[3])
 
-
     def read_unprocessed(self):
-        features = None 
-        target = None 
+        """
+        Read features and target for processing, we are working in
+        an unsupervised task with collaborative filtering so
+        the features must be equal to the target
+        :return:
+        """
+        data = pd.read_csv(data_ratings)
+        users = data['userId']
+        movies = data['movieId']
+        ratings = data['rating']
+        total_movies = len(set(movies.tolist()))
+        total_users = len(set(users.tolist()))
+        features = np.zeros((total_users, total_movies))
+
+        target = features
             
-        return features, target 
+        return features, target
+
+    def write(self):
+        """
+        Saves the processed train  and test set to the data directory
+        :return: None
+        """
+        raise NotImplementedError()
 
     def train(self):
         return self.train
