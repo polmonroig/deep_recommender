@@ -39,7 +39,7 @@ class DataProcessor:
     def __init__(self, test_split=0.2, seed=42, users_per_file=128, transforms=None):
         self.test_split = test_split
         self.seed = seed
-        self.users_per_file = 128
+        self.users_per_file = users_per_file
         self.transforms = transforms
 
     def prepare_and_write(self):
