@@ -36,7 +36,7 @@ class DataProcessor:
     self.users_per_file (int): max users per file of data
     self.transforms (array): list of transformations to apply to the data
     """
-    def __init__(self, test_split=0.2, seed=42, users_per_file=128, transforms):
+    def __init__(self, test_split=0.2, seed=42, users_per_file=128, transforms=None):
         self.test_split = test_split
         self.seed = seed
         self.users_per_file = 128
@@ -62,24 +62,35 @@ class DataProcessor:
         users = data['userId']
         movies = data['movieId']
         ratings = data['rating']
+        total_users = len(set(users.tolist()))
         total_movies = len(set(movies.tolist()))
-        total_files = total_users // users_per_file
-
+        total_files = total_users // self.users_per_file
+        user = 0
+        entry = 0
         for file in range(total_files):
-            total_users = total_files * file
-            shape = (total_users, total_movies)
-            dataset = np.zeros((total_users, total_movies), dtype=np.float32)
+            users_in_file = min(self.users_per_file, self.users_per_file)
+            max_users = users_in_file + user
+            shape = (users_in_file, total_movies)
+            dataset = np.zeros(shape, dtype=np.float32)
+            while user < max_users:
+                d = data.iloc[entry]
+                entry_user = d['userId'] - 1
+                while user == entry_user:
+                    dataset[user][d['movieId'] - 1] = d['rating']
+                    entry += 1
+                    d = data.iloc[entry]
+                    entry_user = d['userId'] - 1
 
-            for user, rating in zip(users, ratings):
-                features[user - 1] = rating
+                user += 1
+
             file_name = name + '_' + DataProcessor.padding(file, total_files) + '.csv'
             print('Saving file', file_name)
             np.savetxt(file_name, dataset, delimiter=',')
 
     @staticmethod
     def padding(number, size):
-        file = str(file)
-        size = str(total_files)
+        file = str(number)
+        size = str(size)
         while len(file) < len(size):
             file = '0' + file
 

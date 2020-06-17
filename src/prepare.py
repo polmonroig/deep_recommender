@@ -4,7 +4,7 @@ import utils
 def main():
     print('Preparing data...')
     transforms = []
-    data = utils.Data(transforms=transforms)
+    data = utils.DataProcessor(transforms=transforms, users_per_file=1000)
     data.prepare_and_write()
 
 
