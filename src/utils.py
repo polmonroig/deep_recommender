@@ -39,12 +39,12 @@ class Data:
         self.test_split = test_split
         self.train = None
         self.test = None
-        self.seed = seed 
+        self.seed = seed
 
     def read(self):
         """
-        Reads the already prepared data from disk, 
-        call this function when training the network 
+        Reads the already prepared data from disk,
+        call this function when training the network
         """
         self.train = pd.read_csv(data_train)
         self.test = pd.read_csv(data_test)
@@ -53,37 +53,40 @@ class Data:
         """
         Reads the data from disks and performs
         all the data wrangling required
-        :param transforms list of transformations to apply 
+        :param transforms list of transformations to apply
         :return: None
         """
-        features, target = self.read_unprocessed()
-        # apply transforms 
-        for t in transforms: 
+        features, target = Data.read_unprocessed()
+        # apply transforms
+        for t in transforms:
             features = t(features)
-        # split dataset 
-        result = train_test_split(features, target, 
+        # split dataset
+        result = train_test_split(features, target,
                                   test_size=self.test_split, random_state=self.seed)
-    
+
         self.train = (result[0], result[2])
         self.test = (result[1], result[3])
 
-    def read_unprocessed(self):
+    @staticmethod
+    def read_unprocessed():
         """
         Read features and target for processing, we are working in
         an unsupervised task with collaborative filtering so
         the features must be equal to the target
         :return:
         """
-        data = pd.read_csv(data_ratings)
+        data = pd.read_csv(data_ratings_small)
         users = data['userId']
         movies = data['movieId']
         ratings = data['rating']
         total_movies = len(set(movies.tolist()))
         total_users = len(set(users.tolist()))
-        features = np.zeros((total_users, total_movies))
-
+        print('Features size:', (total_users, total_movies))
+        features = np.zeros((total_users, total_movies), dtype=np.float32)
+        for user, rating in zip(users, ratings):
+            features[user - 1] = rating
         target = features
-            
+
         return features, target
 
     def write(self):
@@ -91,11 +94,11 @@ class Data:
         Saves the processed train  and test set to the data directory
         :return: None
         """
-        raise NotImplementedError()
+        np.savetxt(data_train, self.train[0], delimiter=',')
+        np.savetxt(data_test, self.test[1], delimiter=',')
 
     def train(self):
         return self.train
 
     def test(self):
         return self.test
-
