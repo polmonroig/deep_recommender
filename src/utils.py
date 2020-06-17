@@ -68,7 +68,7 @@ class DataProcessor:
         user = 0
         entry = 0
         for file in range(total_files):
-            users_in_file = min(self.users_per_file, self.users_per_file)
+            users_in_file = min(self.users_per_file, total_users - user)
             max_users = users_in_file + user
             shape = (users_in_file, total_movies)
             dataset = np.zeros(shape, dtype=np.float32)
