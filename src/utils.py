@@ -1,4 +1,5 @@
 from sklearn.model_selection import train_test_split
+from scipy import sparse
 import pandas as pd
 import numpy as np
 import os
@@ -53,39 +54,65 @@ class DataProcessor:
         data = pd.read_csv(data_ratings)
         # split dataset
         train, test = train_test_split(data, test_size=self.test_split, random_state=self.seed)
-        self.save_data(data_train, train)
-        self.save_data(data_test, test)
+        self.save_data(data_train, train, data['movieId'])
+        self.save_data(data_test, test, data['movieId'])
 
 
 
-    def save_data(self, name, data):
+    def save_data(self, name, data, movies):
+        """
+        The training/testing data is represented with a sparse
+        matrix where each row is a user and each col an item (i.e. movie)
+        The complete sparse matrix is extremely big, even though it is almost
+        empty, it has a lot of zeros, to prevent a data overflow we must divide
+        the data into different chunks, each chunk will contain a certain users,
+        for purpose of this project we don't really care if user A is in row 1
+        or user B in col 2, we only care about its features. In other words
+        we must save just the content of each user in each row, independently of
+        which user we are saving.
+
+        A second improvement was needed to save space was to compress each file
+        as a special format 'npz' for sparse matrixes.
+
+        A problem I encountered is that each movie has an id assigned but the set
+        that contains the ids of movies watched by the user does not contain all the movies,
+        that is why the total movies is calculated as the max possible value of the id.
+        On the other hand, we also pass the data of the movies of the entire dataset.
+
+        """
         users = data['userId']
-        movies = data['movieId']
         ratings = data['rating']
         total_users = len(set(users.tolist()))
-        total_movies = len(set(movies.tolist()))
+        total_movies = np.array(movies.tolist()).max()
+
         total_files = total_users // self.users_per_file
+        print('Generating a total of', total_files, 'files')
         user = 0
         entry = 0
         for file in range(total_files):
             users_in_file = min(self.users_per_file, total_users - user)
+            current_user = 0
             max_users = users_in_file + user
             shape = (users_in_file, total_movies)
             dataset = np.zeros(shape, dtype=np.float32)
-            while user < max_users:
+            while current_user < users_in_file:
                 d = data.iloc[entry]
                 entry_user = d['userId'] - 1
                 while user == entry_user:
-                    dataset[user][d['movieId'] - 1] = d['rating']
+                    dataset[current_user][int(d['movieId'] - 1)] = d['rating']
                     entry += 1
+
                     d = data.iloc[entry]
                     entry_user = d['userId'] - 1
 
+
+                current_user += 1
                 user += 1
 
-            file_name = name + '_' + DataProcessor.padding(file, total_files) + '.csv'
+            file_name = name + '_' + DataProcessor.padding(file, total_files)
             print('Saving file', file_name)
-            np.savetxt(file_name, dataset, delimiter=',')
+            sparse_dataset = sparse.csc_matrix(dataset)
+            sparse.save_npz(file_name, sparse_dataset)
 
     @staticmethod
     def padding(number, size):
