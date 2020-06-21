@@ -23,7 +23,7 @@ class BasicAutoencoder(nn.module):
                            the layer i will contain self.sizes[i] input features and
                            self.sizes[i + 1] output features
     """
-    def __init__(self, tied_weights, sizes):
+    def __init__(self, tied_weights, sizes, activation, init_weights):
         super().__init__()
         self.tied_weights = tied_weights
         self.sizes = sizes

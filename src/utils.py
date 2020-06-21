@@ -1,5 +1,6 @@
 from sklearn.model_selection import train_test_split
 from scipy import sparse
+from torch.utils.data import Dataset
 import pandas as pd
 import numpy as np
 import os
@@ -56,7 +57,6 @@ class DataProcessor:
         train, test = train_test_split(data, test_size=self.test_split, random_state=self.seed)
         self.save_data(data_train, train, data['movieId'])
         self.save_data(data_test, test, data['movieId'])
-
 
 
     def save_data(self, name, data, movies):
@@ -121,3 +121,15 @@ class DataProcessor:
             file = '0' + file
 
         return file
+
+
+class RatingsDataset(Dataset):
+
+    def __init__(self, add_noise):
+        self.add_noise = add_noise
+
+    def __len__(self):
+        return 0
+
+    def __getitem__(self, item):
+        return item
