@@ -28,8 +28,14 @@ class BasicAutoencoder(nn.Module):
         self.tied_weights = tied_weights
         self.sizes = sizes
         self.encoder_layers = []
+        for i in range(1, len(sizes)):
+            self.encoder_layers.append(nn.Linear(in_features=sizes[i - 1], out_features=sizes[i]))
+            self.encoder_layers.append(activation)
+        self.decoder_layers = []
         if not self.tied_weights:
-            self.decoder_layers = []
+            for i in range(len(sizes) - 1, 0, -1):
+                self.decoder_layers.append(nn.Linear(in_features=sizes[i - 1], out_features=sizes[i]))
+                self.decoder_layers.append(activation)
 
     def encode(self, x):
         for layer in self.encoder_layers:
