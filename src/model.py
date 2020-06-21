@@ -1,7 +1,7 @@
 import torch.nn as nn
 
 
-class BasicAutoencoder(nn.module):
+class BasicAutoencoder(nn.Module):
     """
     The basic autoencoder is neural network that can take different forms
     depending on the environment it works on. It is a feedforward deep

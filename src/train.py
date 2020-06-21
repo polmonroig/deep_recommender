@@ -1,4 +1,5 @@
 from utils import RatingsDataset
+from model import BasicAutoencoder
 from argparse import ArgumentParser
 import torch
 
@@ -7,6 +8,8 @@ def get_parser():
     parser = ArgumentParser()
     parser.add_argument('--denoiser', dest='autoencoder', action='store_true', help='Use denoiser autoencoder')
     parser.add_argument('--basic', dest='autoencoder', action='store_false', help='Use basic autoencoder')
+    parser.add_argument('--tied_weights', dest='tied', action='store_true', help='Tie encoder/decoder weights')
+    parser.add_argument('--not_tied', dest='tied', action='store_false', help='Use separate encoder/decoder weights')
     parser.add_argument('--n_epochs', type=int, help='Number of epochs for the training loop')
     parser.add_argument('--batch_size', type=int, help='Batch size of the training and eval set')
     parser.add_argument('--verbose_epochs', type=int, help='Number of epochs per training verbose output')
@@ -41,15 +44,16 @@ def main():
         print('Running on cpu')
     # dataset creation
     dataset = RatingsDataset(add_noise)
-
+    model = BasicAutoencoder()
     # train loop
     for epoch in range(n_epochs):
         if epoch % verbosity == 0:
             print('Epoch', epoch, '/', n_epochs)
-        
+
         error = 0
         if epoch % verbosity == 0:
             print('Error', error)
+
 
 if __name__ == '__main__':
     main()
