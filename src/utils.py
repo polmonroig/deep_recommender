@@ -105,7 +105,6 @@ class DataProcessor:
                     d = data.iloc[entry]
                     entry_user = d['userId'] - 1
 
-
                 current_user += 1
                 user += 1
 
