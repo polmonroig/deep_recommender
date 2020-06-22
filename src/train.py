@@ -1,4 +1,4 @@
-from utils import RatingsDataset
+from utils import RatingsDataset, data_train, data_test
 from model import BasicAutoencoder
 from argparse import ArgumentParser
 from torch.utils.data import DataLoader
@@ -7,6 +7,11 @@ import torch.optim as optim
 
 
 def get_parser():
+    """
+    Creates an argument parser and assigns all the required user defined
+    hyper parameters
+    :return: parser
+    """
     parser = ArgumentParser()
     parser.add_argument('--denoiser', dest='autoencoder', action='store_true', help='Use denoiser autoencoder')
     parser.add_argument('--basic', dest='autoencoder', action='store_false', help='Use basic autoencoder')
@@ -47,8 +52,11 @@ def main():
         device = torch.device('cpu')
         print('Running on cpu')
     # dataset creation
-    dataset = RatingsDataset(add_noise)
-    dataloader = DataLoader(dataset, batch_size,shuffle=False, num_workers=4)
+    dataset_train = RatingsDataset(add_noise, data_train, batch_size=batch_size)
+    dataset_test = RatingsDataset(add_noise, data_test, batch_size=batch_size)
+    data_loader = DataLoader(dataset_train, 1,
+                             shuffle=False, num_workers=4,
+                             pin_memory=True)
     model = BasicAutoencoder().to(device)
     optimizer = optim.Adam(model.params(), lr=learning_rate)
 
@@ -57,7 +65,7 @@ def main():
         if epoch % verbosity == 0:
             print('Epoch', epoch, '/', n_epochs)
 
-        for batch in dataloader:
+        for batch in data_loader:
             optimizer.zero_grad()
             x, y = batch
             x = x.to(device)

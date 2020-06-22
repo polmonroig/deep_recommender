@@ -1,6 +1,8 @@
 from sklearn.model_selection import train_test_split
 from scipy import sparse
 from torch.utils.data import Dataset
+from random import randint
+import torch
 import pandas as pd
 import numpy as np
 import os
@@ -57,7 +59,6 @@ class DataProcessor:
         train, test = train_test_split(data, test_size=self.test_split, random_state=self.seed)
         self.save_data(data_train, train, data['movieId'])
         self.save_data(data_test, test, data['movieId'])
-
 
     def save_data(self, name, data, movies):
         """
@@ -124,12 +125,31 @@ class DataProcessor:
 
 
 class RatingsDataset(Dataset):
+    """
+    The ratings dataset contains all the different train files, each file contains
+    a quantity of N users (except the last file which might contain less).
 
-    def __init__(self, add_noise):
+    For a given list of indices we need to calculate which users to return. Given that
+    we only have a list of files, we must specify that the batch size, this size will be
+    the number of users per file, thus each index represents a file, the batch size of
+    the data loader will specify the number of files. As a precondition, the batch size
+    is always lower than the number of users in a file.
+    """
+
+    def __init__(self, add_noise, directory, batch_size):
         self.add_noise = add_noise
+        self.batch_size = batch_size
+        self.files = [os.path.join(directory, file) for file in os.listdir(directory)]
 
     def __len__(self):
-        return 0
+        return len(self.files)
 
     def __getitem__(self, item):
-        return item
+        data = sparse.load_npz(self.files[item]).todense()
+        data = torch.from_numpy(data)
+        length = data.shape[0]
+        max_perm = randint(self.batch_size, length)
+        indices = torch.randperm(self.batch_size)
+        indices += max_perm
+
+        return data[indices]
