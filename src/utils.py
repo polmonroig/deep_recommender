@@ -56,7 +56,7 @@ class DataProcessor:
         # split dataset
         data = pd.read_csv(data_ratings)
         # split dataset
-        train, test = train_test_split(data, test_size=self.test_split, random_state=self.seed)
+        train, test = train_test_split(data, test_size=self.test_split, random_state=self.seed, shuffle=False)
         self.save_data(data_train, train, data['movieId'])
         self.save_data(data_test, test, data['movieId'])
 
@@ -88,8 +88,10 @@ class DataProcessor:
 
         total_files = total_users // self.users_per_file
         print('Generating a total of', total_files, 'files')
-        user = 0
+
         entry = 0
+        d = data.iloc[entry]
+        user = int(d['userId'] - 1)
         for file in range(total_files):
             users_in_file = min(self.users_per_file, total_users - user)
             current_user = 0
@@ -98,14 +100,13 @@ class DataProcessor:
             dataset = np.zeros(shape, dtype=np.float32)
             while current_user < users_in_file:
                 d = data.iloc[entry]
-                entry_user = d['userId'] - 1
+                entry_user = int(d['userId'] - 1)
                 while user == entry_user:
                     dataset[current_user][int(d['movieId'] - 1)] = d['rating']
                     entry += 1
 
                     d = data.iloc[entry]
                     entry_user = d['userId'] - 1
-
                 current_user += 1
                 user += 1
 
@@ -152,4 +153,4 @@ class RatingsDataset(Dataset):
         indices = torch.randperm(self.batch_size)
         indices += max_perm
 
-        return data[indices]
+        return data[indices], data[indices]

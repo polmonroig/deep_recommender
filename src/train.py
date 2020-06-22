@@ -55,7 +55,7 @@ def main():
     dataset_train = RatingsDataset(add_noise, data_train, batch_size=batch_size)
     dataset_test = RatingsDataset(add_noise, data_test, batch_size=batch_size)
     data_loader = DataLoader(dataset_train, 1,
-                             shuffle=False, num_workers=4,
+                             shuffle=True, num_workers=4,
                              pin_memory=True)
     model = BasicAutoencoder().to(device)
     optimizer = optim.Adam(model.params(), lr=learning_rate)
