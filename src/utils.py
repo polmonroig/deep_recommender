@@ -57,7 +57,7 @@ class DataProcessor:
         data = pd.read_csv(data_ratings)
         # split dataset
         train, test = train_test_split(data, test_size=self.test_split, random_state=self.seed, shuffle=False)
-        self.save_data(data_train, train, data['movieId'])
+        # self.save_data(data_train, train, data['movieId'])
         self.save_data(data_test, test, data['movieId'])
 
     def save_data(self, name, data, movies):
@@ -83,7 +83,7 @@ class DataProcessor:
         """
         users = data['userId']
         ratings = data['rating']
-        total_users = len(set(users.tolist()))
+        total_users = np.array(users.tolist()).max()
         total_movies = np.array(movies.tolist()).max()
 
         total_files = total_users // self.users_per_file
