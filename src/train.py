@@ -1,8 +1,9 @@
-from utils import RatingsDataset, data_train, data_test
+from utils import RatingsDataset, data_train_dir, data_test_dir
 from model import BasicAutoencoder
 from argparse import ArgumentParser
 from torch.utils.data import DataLoader
 import torch
+import torch.nn as nn
 import torch.optim as optim
 
 
@@ -37,6 +38,7 @@ def main():
     # hyper parameter parsing
     parser = get_parser()
     args = parser.parse_args()
+    tied = args.tied
     add_noise = args.autoencoder
     n_epochs = args.n_epochs
     batch_size = args.batch_size
@@ -52,13 +54,15 @@ def main():
         device = torch.device('cpu')
         print('Running on cpu')
     # dataset creation
-    dataset_train = RatingsDataset(add_noise, data_train, batch_size=batch_size)
-    dataset_test = RatingsDataset(add_noise, data_test, batch_size=batch_size)
+    dataset_train = RatingsDataset(add_noise, data_train_dir, batch_size=batch_size)
+    dataset_test = RatingsDataset(add_noise, data_test_dir, batch_size=batch_size)
     data_loader = DataLoader(dataset_train, 1,
                              shuffle=True, num_workers=4,
                              pin_memory=True)
-    model = BasicAutoencoder().to(device)
-    optimizer = optim.Adam(model.params(), lr=learning_rate)
+    model_sizes = [4000, 1000, 500, 100]
+    model = BasicAutoencoder(tied_weights=tied, sizes=model_sizes,
+                             activation=nn.ReLU, init_weights=None).to(device)
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
     # train loop
     for epoch in range(n_epochs):

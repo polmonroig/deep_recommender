@@ -17,6 +17,8 @@ data_links_small = os.path.join(data_dir, 'links_small.csv')
 data_movies_metadata = os.path.join(data_dir, 'movies_metadata.csv')
 data_ratings = os.path.join(data_dir, 'ratings.csv')
 data_ratings_small = os.path.join(data_dir, 'ratings_small.csv')
+data_train_dir = os.path.join(data_dir, 'train/')
+data_test_dir = os.path.join(data_dir, 'test/')
 data_train = os.path.join(data_dir, 'train/data')
 data_test = os.path.join(data_dir, 'test/data')
 
