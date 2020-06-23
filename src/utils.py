@@ -149,6 +149,7 @@ class RatingsDataset(Dataset):
         return len(self.files)
 
     def __getitem__(self, item):
+        print(item)
         data = sparse.load_npz(self.files[item]).todense()
         data = torch.from_numpy(data)
         length = data.shape[0]
