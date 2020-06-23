@@ -29,8 +29,19 @@ def eval_step(model, x, y):
     raise NotImplementedError('Eval step currently not implemented')
 
 
-def train_step(model, optimizer, x, y):
-    raise NotImplementedError('Train step currently not implemented')
+def train_step(model, data_loader, optimizer, device, verbosity):
+    model.train()
+    criterion = nn.functional.mse_loss
+    for i, batch in enumerate(data_loader):
+        optimizer.zero_grad()
+        data, target = batch
+        data = data.to(device)
+        out = model(data)
+        loss = criterion(out, data)
+        if i % verbosity == 0:
+            print("[" + str(i) + "/" + str(len(data_loader)))
+            print("Loss", loss.item())
+        optimizer.step()
 
 
 def main():
@@ -59,28 +70,17 @@ def main():
     data_loader = DataLoader(dataset_train, 1,
                              shuffle=True, num_workers=4,
                              pin_memory=True)
-    model_sizes = [4000, 1000, 500, 100]
+    model_sizes = [176275, 1000, 500, 100]
     model = BasicAutoencoder(tied_weights=tied, sizes=model_sizes,
-                             activation=nn.ReLU, init_weights=None).to(device)
+                             activation=nn.functional.relu, init_weights=None).to(device)
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
     # train loop
     for epoch in range(n_epochs):
         if epoch % verbosity == 0:
             print('Epoch', epoch, '/', n_epochs)
-
-        for batch in data_loader:
-            optimizer.zero_grad()
-            x, y = batch
-            x = x.to(device)
-            y = y.to(device)
-            model.train()
-            train_step(model, optimizer, x, y)
-            model.eval()
-            eval_step(model, x, y)
-            error = 0
-        if epoch % verbosity == 0:
-            print('Error', error)
+        train_step(model, data_loader, optimizer, device, verbosity)
+        # eval_step(model, x, y)
 
 
 if __name__ == '__main__':
