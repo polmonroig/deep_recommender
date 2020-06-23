@@ -34,7 +34,7 @@ class BasicAutoencoder(nn.Module):
         self.decoder_layers = nn.ModuleList()
         if not self.tied_weights:
             for i in range(len(sizes) - 1, 0, -1):
-                self.decoder_layers.append(nn.Linear(in_features=sizes[i - 1], out_features=sizes[i]))
+                self.decoder_layers.append(nn.Linear(in_features=sizes[i], out_features=sizes[i - 1]))
 
     def encode(self, x):
         for layer in self.encoder_layers:
@@ -46,9 +46,11 @@ class BasicAutoencoder(nn.Module):
         if self.tied_weights:
             for layer in reversed(self.encoder_layers):
                 x = layer(x)
+                x = self.activation(x)
         else:
             for layer in self.decoder_layers:
                 x = layer(x)
+                x = self.activation(x)
         return x
 
     def forward(self, x):

@@ -149,11 +149,13 @@ class RatingsDataset(Dataset):
         return len(self.files)
 
     def __getitem__(self, item):
-        print(item)
+
         data = sparse.load_npz(self.files[item]).todense()
         data = torch.from_numpy(data)
         length = data.shape[0]
-        max_perm = randint(self.batch_size, length)
+        # print('Length:', length)
+        max_perm = randint(self.batch_size, length - self.batch_size)
+        # print('max_perm:', max_perm)
         indices = torch.randperm(self.batch_size)
         indices += max_perm
 

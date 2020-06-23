@@ -39,13 +39,13 @@ def train_step(model, data_loader, optimizer, device, verbosity):
         out = model(data)
         loss = criterion(out, data)
         if i % verbosity == 0:
-            print("[" + str(i) + "/" + str(len(data_loader)))
-            print("Loss", loss.item())
+            print('[' + str(i) + '/' + str(len(data_loader)) + ']')
+            print('Loss', loss.item())
         optimizer.step()
 
 
 def main():
-    print("Training initialized")
+    print('Training initialized')
     # hyper parameter parsing
     parser = get_parser()
     args = parser.parse_args()
