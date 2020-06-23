@@ -84,8 +84,8 @@ def main():
     # device initialization
     device = None
     if torch.cuda.is_available():
-        device = torch.device('cuda')
-        print('Running on gpu')
+        device = torch.device('cpu')
+        print('Running on cpu')
     else:
         device = torch.device('cpu')
         print('Running on cpu')
@@ -95,18 +95,17 @@ def main():
     train_data_loader = DataLoader(dataset_train, 1,
                              shuffle=True, num_workers=4,
                              pin_memory=True)
-    model_sizes = [176275, 1000]
+    model_sizes = [176275, 1000, 500, 100]
     model = BasicAutoencoder(tied_weights=tied, sizes=model_sizes,
-                             activation=nn.functional.relu, init_weights=None).to(device)
+                             activation=nn. functional.relu, init_weights=None).to(device)
     optimizer = optim.SGD(model.parameters(), lr=learning_rate)
 
     # train loop
     for epoch in range(n_epochs):
-        if epoch % verbosity == 0:
-            print('Epoch', epoch, '/', n_epochs)
+        print('Epoch', epoch, '/', n_epochs)
         train_step(model, train_data_loader, optimizer, device, verbosity)
         # eval_step(model, x, y)
-    torch.save(model.state_dict(), os.path.join(wandb.run.dir, 'model.pt'))
+        torch.save(model.state_dict(), os.path.join(wandb.run.dir, 'model.pt'))
 
 
 if __name__ == '__main__':
