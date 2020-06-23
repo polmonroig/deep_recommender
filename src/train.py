@@ -3,6 +3,8 @@ from model import BasicAutoencoder
 from argparse import ArgumentParser
 from torch.utils.data import DataLoader
 import torch
+import wandb
+import os 
 import torch.nn as nn
 import torch.optim as optim
 
@@ -41,11 +43,14 @@ def train_step(model, data_loader, optimizer, device, verbosity):
         if i % verbosity == 0:
             print('[' + str(i) + '/' + str(len(data_loader)) + ']')
             print('Loss', loss.item())
+            wandb.log({"TrainLoss": loss})
         optimizer.step()
+
 
 
 def main():
     print('Training initialized')
+    wandb.init(project="mrs")
     # hyper parameter parsing
     parser = get_parser()
     args = parser.parse_args()
@@ -67,7 +72,7 @@ def main():
     # dataset creation
     dataset_train = RatingsDataset(add_noise, data_train_dir, batch_size=batch_size)
     dataset_test = RatingsDataset(add_noise, data_test_dir, batch_size=batch_size)
-    data_loader = DataLoader(dataset_train, 1,
+    train_data_loader = DataLoader(dataset_train, 1,
                              shuffle=True, num_workers=4,
                              pin_memory=True)
     model_sizes = [176275, 1000, 500, 100]
@@ -79,8 +84,9 @@ def main():
     for epoch in range(n_epochs):
         if epoch % verbosity == 0:
             print('Epoch', epoch, '/', n_epochs)
-        train_step(model, data_loader, optimizer, device, verbosity)
+        train_step(model, train_data_loader, optimizer, device, verbosity)
         # eval_step(model, x, y)
+    torch.save(model.state_dict(), os.path.join(wandb.run.dir, 'model.pt'))
 
 
 if __name__ == '__main__':
