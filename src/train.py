@@ -4,7 +4,8 @@ from argparse import ArgumentParser
 from torch.utils.data import DataLoader
 import torch
 import wandb
-import os 
+import os
+import gc
 import torch.nn as nn
 import torch.optim as optim
 
@@ -27,24 +28,36 @@ def get_parser():
     return parser
 
 
+def loss_function(y_pred, y_true):
+    loss = nn.functional.mse_loss
+    indices = y_true != 0
+
+    return loss(y_pred[indices], y_true[indices])
+
 def eval_step(model, x, y):
     raise NotImplementedError('Eval step currently not implemented')
 
 
 def train_step(model, data_loader, optimizer, device, verbosity):
     model.train()
-    criterion = nn.functional.mse_loss
+    criterion = loss_function
     for i, batch in enumerate(data_loader):
         optimizer.zero_grad()
         data, target = batch
         data = data.to(device)
         out = model(data)
         loss = criterion(out, data)
+        loss.backward()
         if i % verbosity == 0:
             print('[' + str(i) + '/' + str(len(data_loader)) + ']')
             print('Loss', loss.item())
             wandb.log({"TrainLoss": loss})
+        # memory management
+        del loss, out, data, target
+        gc.collect()
+        torch.cuda.empty_cache()
         optimizer.step()
+
 
 
 
@@ -60,6 +73,13 @@ def main():
     batch_size = args.batch_size
     verbosity = args.verbose_epochs
     learning_rate = args.lr
+    # log hyperparameters
+
+    wandb.config.n_epochs = n_epochs
+    wandb.config.batch_size = batch_size
+    wandb.config.learning_rate = learning_rate
+    wandb.config.denoised = add_noise
+    wandb.config.tied = tied
 
     # device initialization
     device = None
@@ -75,10 +95,10 @@ def main():
     train_data_loader = DataLoader(dataset_train, 1,
                              shuffle=True, num_workers=4,
                              pin_memory=True)
-    model_sizes = [176275, 1000, 500, 100]
+    model_sizes = [176275, 1000]
     model = BasicAutoencoder(tied_weights=tied, sizes=model_sizes,
                              activation=nn.functional.relu, init_weights=None).to(device)
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    optimizer = optim.SGD(model.parameters(), lr=learning_rate)
 
     # train loop
     for epoch in range(n_epochs):
