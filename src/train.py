@@ -2,6 +2,7 @@ from utils import RatingsDataset, data_train_dir, data_test_dir
 from model import BasicAutoencoder
 from argparse import ArgumentParser
 from torch.utils.data import DataLoader
+from torch.utils.checkpoint import checkpoint_sequential
 import torch
 import wandb
 import os
@@ -98,30 +99,30 @@ def main():
     # device initialization
     device = None
     if torch.cuda.is_available():
-        device = torch.device('gpu')
-        print('Running on gpu')
+        device = torch.device('cpu')
+        print('Running on cpu')
     else:
         device = torch.device('cpu')
         print('Running on cpu')
     # dataset creation
     dataset_train = RatingsDataset(add_noise, data_train_dir, batch_size=batch_size)
-    dataset_test = RatingsDataset(add_noise, data_test_dir, batch_size=batch_size)
+    #dataset_test = RatingsDataset(add_noise, data_test_dir, batch_size=batch_size)
     train_data_loader = DataLoader(dataset_train, 1,
                              shuffle=True, num_workers=4,
                              pin_memory=True)
-    test_data_loader = DataLoader(dataset_test, 1,
-                             shuffle=True, num_workers=4,
-                             pin_memory=True)
+    #test_data_loader = DataLoader(dataset_test, 1,
+    #                         shuffle=True, num_workers=4,
+    #                         pin_memory=True)
     model_sizes = [176275, 1000, 500, 100]
     model = BasicAutoencoder(tied_weights=tied, sizes=model_sizes,
-                             activation=nn. functional.relu, init_weights=None).to(device)
+                             activation=nn.functional.relu, init_weights=None).to(device)
     optimizer = optim.SGD(model.parameters(), lr=learning_rate)
-
+    wandb.watch(model, log="all")
     # train loop
     for epoch in range(n_epochs):
         print('Epoch', epoch, '/', n_epochs)
         train_step(model, train_data_loader, optimizer, device, verbosity)
-        eval_step(model, test_data_loader, device, verbosity)
+        # eval_step(model, test_data_loader, device, verbosity)
         torch.save(model.state_dict(), os.path.join(wandb.run.dir, 'model.pt'))
 
 
