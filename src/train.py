@@ -45,7 +45,7 @@ def eval_step(model, data_loader, device, verbosity):
         loss = criterion(out, data)
         if i % verbosity == 0:
             print('[' + str(i) + '/' + str(len(data_loader)) + ']')
-            print('Loss', loss.item())
+            print('Test Loss', loss.item())
             wandb.log({"EvalLoss": loss})
         # memory management
         del loss, out, data, target
@@ -65,7 +65,7 @@ def train_step(model, data_loader, optimizer, device, verbosity):
         loss.backward()
         if i % verbosity == 0:
             print('[' + str(i) + '/' + str(len(data_loader)) + ']')
-            print('Loss', loss.item())
+            print('Train Loss', loss.item())
             wandb.log({"TrainLoss": loss})
         # memory management
         del loss, out, data, target
@@ -116,13 +116,13 @@ def main():
     model_sizes = [176275, 1000, 500, 100]
     model = BasicAutoencoder(tied_weights=tied, sizes=model_sizes,
                              activation=nn.functional.relu, init_weights=None).to(device)
-    optimizer = optim.RMSprop(model.parameters(), lr=learning_rate)
+    optimizer = optim.SGD(model.parameters(), lr=learning_rate)
 
     # train loop
     for epoch in range(n_epochs):
         print('Epoch', epoch, '/', n_epochs)
         train_step(model, train_data_loader, optimizer, device, verbosity)
-        # eval_step(model, test_data_loader, device, verbosity)
+        eval_step(model, test_data_loader, device, verbosity)
         torch.save(model.state_dict(), os.path.join(wandb.run.dir, 'model.pt'))
 
 
