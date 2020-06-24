@@ -127,7 +127,7 @@ def main():
         print('Epoch', epoch, '/', n_epochs)
         train_step(model, train_data_loader, optimizer, device, verbosity)
         eval_step(model, test_data_loader, device, verbosity)
-        torch.save(model.state_dict(), os.path.join(wandb.run.dir, 'model.pt'))
+         #torch.save(model.state_dict(), os.path.join(wandb.run.dir, 'model.pt'))
 
 
 if __name__ == '__main__':
