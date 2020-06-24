@@ -120,7 +120,9 @@ def main():
     model_sizes = [176275, 1000, 500, 100]
     model = BasicAutoencoder(tied_weights=tied, sizes=model_sizes,
                              activation=nn.functional.relu, w_init=xavier_init).to(device)
+    
     optimizer = optim.SGD(model.parameters(), lr=learning_rate)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.1)
 
     # train loop
     for epoch in range(n_epochs):
@@ -128,6 +130,7 @@ def main():
         train_step(model, train_data_loader, optimizer, device, verbosity)
         eval_step(model, test_data_loader, device, verbosity)
         torch.save(model.state_dict(), os.path.join(wandb.run.dir, 'model.pt'))
+        scheduler.step()
 
 
 if __name__ == '__main__':
