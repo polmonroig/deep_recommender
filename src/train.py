@@ -75,8 +75,9 @@ def train_step(model, data_loader, optimizer, device, verbosity):
 
 
 def xavier_init(layer):
-    nn.init.xavier_uniform(layer.weight)
-    m.bias.data.fill_(0.01)
+    if type(layer) == nn.Linear:
+        nn.init.xavier_uniform_(layer.weight)
+        layer.bias.data.fill_(0.01)
 
 
 def main():
@@ -109,17 +110,16 @@ def main():
         print('Running on cpu')
     # dataset creation
     dataset_train = RatingsDataset(add_noise, data_train_dir, batch_size=batch_size)
-    #dataset_test = RatingsDataset(add_noise, data_test_dir, batch_size=batch_size)
+    dataset_test = RatingsDataset(add_noise, data_test_dir, batch_size=batch_size)
     train_data_loader = DataLoader(dataset_train, 1,
                              shuffle=True, num_workers=4,
                              pin_memory=True)
-    #test_data_loader = DataLoader(dataset_test, 1,
-    #                         shuffle=True, num_workers=4,
-    #                         pin_memory=True)
+    test_data_loader = DataLoader(dataset_test, 1,
+                             shuffle=True, num_workers=4,
+                             pin_memory=True)
     model_sizes = [176275, 1000, 500, 100]
     model = BasicAutoencoder(tied_weights=tied, sizes=model_sizes,
-                             activation=nn.functional.relu).to(device)
-    model.apply(model)
+                             activation=nn.functional.relu, w_init=xavier_init).to(device)
     optimizer = optim.SGD(model.parameters(), lr=learning_rate)
 
     # train loop

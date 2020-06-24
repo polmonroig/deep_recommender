@@ -23,7 +23,7 @@ class BasicAutoencoder(nn.Module):
                            the layer i will contain self.sizes[i] input features and
                            self.sizes[i + 1] output features
     """
-    def __init__(self, tied_weights, sizes, activation):
+    def __init__(self, tied_weights, sizes, activation, w_init):
         super().__init__()
         self.tied_weights = tied_weights
         self.sizes = sizes
@@ -38,6 +38,9 @@ class BasicAutoencoder(nn.Module):
             for encoder_layer, decoder_layer in zip(self.encoder_layers, reversed(self.decoder_layers)):
                 decoder_layer.weight.data = encoder_layer.weight.data.transpose(0,1)
 
+        for layer_e, layer_d in zip(self.encoder_layers, self.decoder_layers):
+            w_init(layer_e)
+            w_init(layer_d)
 
 
     def encode(self, x):
