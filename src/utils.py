@@ -158,5 +158,17 @@ class RatingsDataset(Dataset):
         # print('max_perm:', max_perm)
         indices = torch.randperm(self.batch_size)
         indices += max_perm
+        
+        output = data[indices]
+        if self.add_noise:
+            output = self.noise(output)
 
-        return data[indices], data[indices]
+        return output, output 
+
+
+    def noise(data):
+        """
+        torch.randn applies a gaussian noise 
+        to the data 
+        """
+        return data * torch.randn(data.shape)
