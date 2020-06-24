@@ -116,8 +116,8 @@ def main():
     model_sizes = [176275, 1000, 500, 100]
     model = BasicAutoencoder(tied_weights=tied, sizes=model_sizes,
                              activation=nn.functional.relu, init_weights=None).to(device)
-    optimizer = optim.SGD(model.parameters(), lr=learning_rate)
-    wandb.watch(model, log="all")
+    optimizer = optim.RMSprop(model.parameters(), lr=learning_rate)
+
     # train loop
     for epoch in range(n_epochs):
         print('Epoch', epoch, '/', n_epochs)
