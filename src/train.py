@@ -74,6 +74,9 @@ def train_step(model, data_loader, optimizer, device, verbosity):
         optimizer.step()
 
 
+def xavier_init(layer):
+    nn.init.xavier_uniform(layer.weight)
+    m.bias.data.fill_(0.01)
 
 
 def main():
@@ -115,7 +118,8 @@ def main():
     #                         pin_memory=True)
     model_sizes = [176275, 1000, 500, 100]
     model = BasicAutoencoder(tied_weights=tied, sizes=model_sizes,
-                             activation=nn.functional.relu, init_weights=None).to(device)
+                             activation=nn.functional.relu).to(device)
+    model.apply(model)
     optimizer = optim.SGD(model.parameters(), lr=learning_rate)
 
     # train loop
