@@ -34,8 +34,22 @@ def loss_function(y_pred, y_true):
 
     return loss(y_pred[indices], y_true[indices])
 
-def eval_step(model, x, y):
-    raise NotImplementedError('Eval step currently not implemented')
+def eval_step(model, data_loader, device, verbosity):
+    model.eval()
+    criterion = loss_function
+    for i, batch in enumerate(data_loader):
+        data, target = batch
+        data = data.to(device)
+        out = model(data)
+        loss = criterion(out, data)
+        if i % verbosity == 0:
+            print('[' + str(i) + '/' + str(len(data_loader)) + ']')
+            print('Loss', loss.item())
+            wandb.log({"EvalLoss": loss})
+        # memory management
+        del loss, out, data, target
+        gc.collect()
+        torch.cuda.empty_cache()
 
 
 def train_step(model, data_loader, optimizer, device, verbosity):
@@ -84,8 +98,8 @@ def main():
     # device initialization
     device = None
     if torch.cuda.is_available():
-        device = torch.device('cpu')
-        print('Running on cpu')
+        device = torch.device('gpu')
+        print('Running on gpu')
     else:
         device = torch.device('cpu')
         print('Running on cpu')
@@ -93,6 +107,9 @@ def main():
     dataset_train = RatingsDataset(add_noise, data_train_dir, batch_size=batch_size)
     dataset_test = RatingsDataset(add_noise, data_test_dir, batch_size=batch_size)
     train_data_loader = DataLoader(dataset_train, 1,
+                             shuffle=True, num_workers=4,
+                             pin_memory=True)
+    test_data_loader = DataLoader(dataset_test, 1,
                              shuffle=True, num_workers=4,
                              pin_memory=True)
     model_sizes = [176275, 1000, 500, 100]
@@ -104,7 +121,7 @@ def main():
     for epoch in range(n_epochs):
         print('Epoch', epoch, '/', n_epochs)
         train_step(model, train_data_loader, optimizer, device, verbosity)
-        # eval_step(model, x, y)
+        eval_step(model, test_data_loader, device, verbosity)
         torch.save(model.state_dict(), os.path.join(wandb.run.dir, 'model.pt'))
 
 
