@@ -22,6 +22,10 @@ class BasicAutoencoder(nn.Module):
                            for each layer; given an index 'i' of the list of sizes
                            the layer i will contain self.sizes[i] input features and
                            self.sizes[i + 1] output features
+        self.activation (torch.nn.functional): activation function for each layer 
+        w_init (function): weight initialization function (e.g. torch.init.xavier_init_)
+        
+
     """
     def __init__(self, tied_weights, sizes, activation, w_init):
         super().__init__()
