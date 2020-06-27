@@ -166,7 +166,7 @@ class RatingsDataset(Dataset):
         return output, output 
 
 
-    def noise(data):
+    def noise(self, data):
         """
         torch.randn applies a gaussian noise 
         to the data 
