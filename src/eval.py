@@ -37,8 +37,9 @@ def convert_model(model_path, batch_size):
     model_path = model_path.split('/')
     model_name = model_path[-1]
     model_dir = ''
-    for name in model_name:
+    for name in model_path[:-1]:
         model_dir = join(model_dir, name)
+    print(model_dir)
     dummy_input = torch.randn(batch_size, 176275)
     torch.onnx.export(model, dummy_input, join(model_dir, model_name + '.onnx'),
                      export_params=True, verbose=True,
