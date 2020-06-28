@@ -4,6 +4,8 @@ from train import xavier_init
 from os.path import join
 import torch.nn as nn
 import torch
+import onnx
+import onnxruntime
 
 
 def get_parser():
@@ -21,11 +23,23 @@ def get_parser():
     parser.add_argument('--data', type=str, help='Data to evaluate')
     return parser
 
+def to_numpy(tensor):
+    return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
 
 def eval_model(model_path, data):
-    raise NotImplementedError()
+    print('Evaluating', model_path)
+    print('Loading...')
+    model = onnx.load(model_path)
+    print('Verifying integrity...')
+    onnx.checker.check_model(model)
+    print('Creating session...')
+    session = onnxruntime.InferenceSession(model_path)
+    session_input = session.get_inputs()[0]
+    session_output = session.run(None, session_input)
+
 
 def convert_model(model_path, batch_size):
+    print('Converting model to ONNX')
     model = BasicAutoencoder(tied_weights=True, sizes=[176275, 1000, 500, 100],
                              activation=nn.functional.relu,
                              w_init=xavier_init)
