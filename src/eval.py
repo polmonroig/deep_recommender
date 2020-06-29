@@ -3,6 +3,7 @@ from model import BasicAutoencoder
 from train import xavier_init
 from scipy import sparse
 from os.path import join
+import numpy as np
 import torch.nn as nn
 import torch
 import onnx
@@ -39,9 +40,13 @@ def eval_model(model_path, data):
     session = onnxruntime.InferenceSession(model_path)
     session_input = {session.get_inputs()[0].name: data[:64]}
     session_output = session.run(None, session_input)
-    for user in range(len(session_output)):
-        print('Reccommended images for user', user)
-        
+
+    for user in range(len(session_output[0])):
+        print('Reccommended movies for user', user)
+        results = session_output[0][user]
+        results = results.argsort()[-3:][::-1]
+        print(results)
+
 
 
 def convert_model(model_path, batch_size):
