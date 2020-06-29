@@ -1,6 +1,7 @@
 from argparse import ArgumentParser
 from model import BasicAutoencoder
 from train import xavier_init
+from scipy import sparse
 from os.path import join
 import torch.nn as nn
 import torch
@@ -32,10 +33,15 @@ def eval_model(model_path, data):
     model = onnx.load(model_path)
     print('Verifying integrity...')
     onnx.checker.check_model(model)
+    print('Reading data...')
+    data = sparse.load_npz(data).todense()
     print('Creating session...')
     session = onnxruntime.InferenceSession(model_path)
-    session_input = session.get_inputs()[0]
+    session_input = {session.get_inputs()[0].name: data[:64]}
     session_output = session.run(None, session_input)
+    for user in range(len(session_output)):
+        print('Reccommended images for user', user)
+        
 
 
 def convert_model(model_path, batch_size):
