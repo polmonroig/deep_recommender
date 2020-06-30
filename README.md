@@ -11,6 +11,8 @@ system for movies recommendation.
 
 ![Evak loss](docs/eval_loss.png)
 
+**Note**: Additional information on the training process and hyperparameters can be found [link](https://app.wandb.ai/polmonroig/mrs?workspace=user-polmonroig "here").. 
+
 ## Further research
 
 ## Requierements and Usage  
