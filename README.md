@@ -13,6 +13,7 @@ The objective of the neural network was to perform a *model based* collaborative
 for that we used and autoencoder that tried to learn the ratings of the movies that the user
 has watched but at the same time, applying the knowledge of ratings of other users to the movies
 that have not been watched.
+![Architecture](docs/network.png)
 ### Loss function
 To be able to learn the ratings of movies not seen by the user a loss function of MSE
 was applied between the input dataset and the output of the network, but ignoring the indexes
