@@ -7,6 +7,9 @@ system for movies recommendation.
 ## Network architecture
 
 ## Experimentation
+![Train loss](docs/train_loss.png)
+
+![Evak loss](docs/eval_loss.png)
 
 ## Further research
 
